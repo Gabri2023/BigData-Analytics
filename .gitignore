@@ -1,0 +1,17 @@
+# ambienti virtuali
+venv/
+pm_env/
+.venv/
+
+# cache python
+__pycache__/
+*.pyc
+
+# file di sistema
+.DS_Store
+Thumbs.db
+
+# output / modelli generati
+Modelli_datasets_raw/
+*.png
+*.pnml
