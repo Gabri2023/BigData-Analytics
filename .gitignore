@@ -11,7 +11,4 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-# output / modelli generati
-Modelli_datasets_raw/
-*.png
-*.pnml
+*.xes
