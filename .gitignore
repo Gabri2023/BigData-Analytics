@@ -10,5 +10,5 @@ __pycache__/
 # file di sistema
 .DS_Store
 Thumbs.db
-
+attiavzione_aambiente_virtuale.txt
 *.xes
