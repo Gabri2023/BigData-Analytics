@@ -1,3 +1,0 @@
-per avviare l'env 
-
-pm_env\Scripts\activate
