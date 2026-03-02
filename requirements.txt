@@ -1,0 +1,10 @@
+matplotlib
+pandas
+seaborn
+numpy
+networkx
+nltk
+gensim
+scikit-learn
+scikit-learn-extra
+scipy
