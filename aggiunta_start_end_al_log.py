@@ -102,8 +102,8 @@ def add_start_end_to_log(log):
 # ESECUZIONE
 # ==============================
 # Assicurati che il nome del file sia corretto
-filename = "Sepsis Cases - Event Log_new.xes"
-output_name = "SEPSIS_Final_Complete.xes"
+filename = "fineExp.xes"
+output_name = "fineExp_Complete.xes"
 
 print(f"Caricamento {filename}...")
 log = pm4py.read_xes(filename)

@@ -8,3 +8,5 @@ gensim
 scikit-learn
 scikit-learn-extra
 scipy
+hdbscan
+umap-learn
