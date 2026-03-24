@@ -6,7 +6,7 @@ pm_env/
 # cache python
 __pycache__/
 *.pyc
-notebooks/1_*.ipynb
+notebooks/fineExp/1_*.ipynb
 # file di sistema
 .DS_Store
 Thumbs.db
