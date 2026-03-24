@@ -1,56 +1,82 @@
-import parse_subelements
-import frequences_extraction 
-import get_features
-import pandas as pd
-import numpy as np
-import networkx as nx
-import matplotlib.pyplot as plt
-import seaborn as sns
-from sentence_transformers import SentenceTransformer
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics.pairwise import cosine_similarity
-import umap
-import hdbscan
-import re
+import argparse
+from pathlib import Path
+import yaml
 
-# 0. Carichiamo i file di testo e i csv
-csv_file = '../data/fineExp/fineExp_table2_on_file.csv' 
-subelements_txt = '../data/fineExp/subelements_fineExp.txt'
-anomalous_txt_data = open('../data/fineExp/custom/anomalous_sub.txt', 'r').read()
-correct_txt_data = open('../data/fineExp/custom/correct_sub.txt', 'r').read()
+def main():
+    # 1. Command Line Arguments Configuration
+    parser = argparse.ArgumentParser(description="Log Alteration Engine - Process Mining")
+    
+    # Parameter for the dataset name (required)
+    parser.add_argument("--dataset", type=str, required=True,
+                        help="The dataset name (e.g., 'fineExp). Used to resolve all file paths.")
+    
+    # Parameter for the strategy (Infect or Repair)
+    parser.add_argument("--strategy", type=str, required=True, choices=["infect", "repair"],
+                        help="Choose whether to inject anomalies ('infect') or fix them ('repair').")
 
-# Estrazione frequenze
-freq_dict = frequences_extraction.frequence_extraction(csv_file)
+    # Parameter for the scenario
+    parser.add_argument("--scenario", type=str, required=True,
+                        help="Scenario code to execute (e.g., A1, B2, D1).")
+    
+    # Optional parameter for metrics
+    parser.add_argument("--recalc-baseline", action="store_true",
+                        help="If set, recalculates baseline metrics before execution.")
+    
+    args = parser.parse_args()
 
-# Estraiamo i 27 ID anomali del file (escludendo i 5 finali che aggiungeremo a mano)
-tutti_id = list(freq_dict.keys())
-anomalous_ids_ordered = tutti_id[:27] 
+    # 2. Dynamic Path Construction
+    dataset_name = args.dataset
+    base_data_path = Path("data") / dataset_name
+    
+    log_path = base_data_path / f"{dataset_name}.xes"
+    subgraphs_path = base_data_path / "subelements.txt"
+    # config?
+    output_path = base_data_path / "custom" / "processed" / f"{dataset_name}_{args.strategy}_{args.scenario}.xes"
+    
+    print(f"--- Starting Experiment ---")
+    print(f"Dataset: {dataset_name}")
+    print(f"Strategy: {args.strategy.upper()}")
+    print(f"Scenario: {args.scenario}")
+    print(f"Log Path: {log_path}")
+    
+    # 3. File Existence Check
+    if not log_path.exists():
+        raise FileNotFoundError(f"Original log not found at {log_path}")
+    
+    # 4. Load Configuration (e.g., thresholds, semantic weights)
+    #with open(config_path, 'r') as file:
+    #    config = yaml.safe_load(file)
+    
+    # 5. Logic Pipeline (Pseudo-code)
+    '''
+    # --- PHASE 1: Loading ---
+    original_log = load_log(log_path)
+    subgraphs = load_subgraphs(subgraphs_path)
+    
+    if args.recalc_baseline:
+        calculate_baseline_metrics(original_log)
 
-# Parsiamo i grafi anomali e corretti dal file di testo
-anomalous_subgraphs = parse_subelements.parse_subelements(anomalous_txt_data, custom_ids=anomalous_ids_ordered)
-correct_subgraphs = parse_subelements.parse_subelements(correct_txt_data)
-
-# Funzione per l'aggiunta manuale dei 5 restanti
-def add_manual_sub(sub_dict, sub_id, nodes_dict, edges_list):
-    G = nx.DiGraph()
-    for nid, lbl in nodes_dict.items():
-        G.add_node(nid, label=lbl)
-    G.add_edges_from(edges_list)
-    sub_dict[sub_id] = G
-
-# Aggiungiamo i 5 grafi mancanti per arrivare a 32
-add_manual_sub(anomalous_subgraphs, "Sub174", {1: "AddPenalty", 2: "NotifyOffenders", 3: "ReceiveResults"}, [(1,2), (2,3)])
-add_manual_sub(anomalous_subgraphs, "Sub179", {1: "AddPenalty", 2: "NotifyOffenders", 3: "ReceiveResults"}, [(1,2), (2,3)])
-add_manual_sub(anomalous_subgraphs, "Sub176", {1: "AddPenalty", 2: "AppealToPrefecture", 3: "AppealToJudge", 4: "SendAppeal"}, [(1,2), (2,3), (3,4)])
-add_manual_sub(anomalous_subgraphs, "Sub178", {1: "AddPenalty", 2: "SendAppeal"}, [(1,2)])
-add_manual_sub(anomalous_subgraphs, "Sub180", {1: "SendAppeal", 2: "AppealToJudge", 3: "AddPenalty"}, [(1,2), (2,3)])
-
-
-print(f"Sottografi anomali in memoria: {len(anomalous_subgraphs)}")
-print(f"Sottografi normativi in memoria: {len(correct_subgraphs)}")
-
-target_subs = list(anomalous_subgraphs.keys()) # I nostri 32 ID
-
-print(f"\nInizio calcolo feature per {len(target_subs)} sottografi anomali...")
-
-features = get_features(anomalous_subgraphs, correct_subgraphs, target_subs, freq_dict)
+    # --- PHASE 2 & 3: Scenario Filter and Alteration Engine ---
+    # The scenario_selector module filters subgraphs based on args.scenario
+    target_subgraphs = apply_scenario(original_log, subgraphs, args.scenario, config)
+    
+    if args.strategy == "repair":
+        altered_log = run_repair(original_log, target_subgraphs, config)
+    elif args.strategy == "infect":
+        altered_log = run_infect(original_log, target_subgraphs, config)
+        
+    # --- PHASE 4: Saving and Metrics Evaluation ---
+    save_log(altered_log, output_path)
+    evaluate_new_log(altered_log) # Fitness, precision, generalization, simplicity
+    '''
+    
+    print(f"Processing completed. New log saved at: {output_path}")
+    print(f"---------------------------\n")
+    
+if __name__ == "__main__":
+    main()
+    
+    '''
+    Example from terminal:
+    python main.py --dataset fineExp --strategy repair --scenario A1
+    '''
