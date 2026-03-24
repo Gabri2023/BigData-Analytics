@@ -12,5 +12,5 @@ notebooks/fineExp/1_clusterings_semantic.ipynb
 .DS_Store
 Thumbs.db
 attiavzione_ambiente_virtuale.txt
-*.xes
+XES/
 *.md
