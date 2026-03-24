@@ -1,0 +1,1 @@
+# Soglie GED, Colli di bottiglia, Early/Late

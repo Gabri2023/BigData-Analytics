@@ -1,0 +1,1 @@
+# Logica per iniettare i pattern anomali

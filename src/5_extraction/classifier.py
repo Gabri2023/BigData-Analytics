@@ -1,0 +1,1 @@
+# Generazione matrice (Best Practice, Workaround, Violazioni)

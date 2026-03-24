@@ -1,0 +1,1 @@
+# Sostituzioni affini, Aggiunte ortogonali, Omissioni
