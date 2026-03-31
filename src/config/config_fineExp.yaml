@@ -1,0 +1,25 @@
+# ==========================================
+# CONFIGURATION FILE: fineExp Dataset
+# ==========================================
+
+# --- A SCENARIO: Global & Frequency ---
+# Parameters for filters A2_top and A2_bottom
+top_k: 5
+bottom_k: 5
+
+# --- B SCENARIO: Structural & Topological ---
+# Parameters for filters B1, B2, B3
+ged_thresholds:
+  exact: 2
+  min_extreme: 4
+
+# How many top bottlenecks we want to target
+top_k_bottlenecks: 3
+
+# --- C SCENARIO: Semantic & Context (In arrivo) ---
+# Soglia minima di cosine similarity per considerare due attività "interscambiabili"
+semantic_similarity_threshold: 0.85
+
+# --- D SCENARIO: Performance (In arrivo) ---
+# Unità di misura per il calcolo dei colli di bottiglia temporali (days, hours, minutes)
+time_unit: "days"

@@ -1,1 +1,0 @@
-# Logica per eliminare le diversità
