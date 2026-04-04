@@ -110,8 +110,10 @@ def main():
         # --- B SCENARIOS ---
         case "B1_exact":
             target_anomalies = filter_by_ged(features_dict, exact_ged=config['ged_thresholds']['exact'])
-        case "B1_extreme":
+        case "B1_extreme_min":
             target_anomalies = filter_by_ged(features_dict, min_ged=config['ged_thresholds']['min_extreme'])
+        case "B2_extreme_max":
+            target_anomalies = filter_by_ged(features_dict, max_ged=config['ged_thresholds']['max_extreme'])
         case "B2_bottleneck":
             target_anomalies = filter_by_bottleneck(features_dict, anom_graphs, auto_bottlenecks)
         case "B3_early":
