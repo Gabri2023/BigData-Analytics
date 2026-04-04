@@ -7,7 +7,8 @@ def update_results_matrix(matrix_path: Path,
                           strategy: str, 
                           scenario: str, 
                           modified_traces: int, 
-                          metrics: Dict[str, float]) -> pd.DataFrame:
+                          metrics: Dict[str, float],
+                          parameters: str = "N/A") -> pd.DataFrame:
     """
     Updates the central CSV matrix with the results of the latest experiment.
     If the file or its parent directories don't exist, it creates them.
@@ -19,6 +20,7 @@ def update_results_matrix(matrix_path: Path,
         'Dataset': dataset,
         'Strategy': strategy.upper(),
         'Scenario': scenario,
+        'Parameters': parameters,  # Assuming 'parameters' is defined in the main function and passed here
         'Modified_Traces': modified_traces,
         'Fitness': round(metrics['fitness'], 4),
         'Precision': round(metrics['precision'], 4),

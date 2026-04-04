@@ -98,29 +98,39 @@ def main():
     # -----------------------------------
     # --- PHASE 3: Scenario Selection ---
     # -----------------------------------
+    scenario_params = ""
     match args.scenario:
         # --- A SCENARIOS ---
         case "A1":
             target_anomalies = filter_all_anomalies(features_dict)
+            scenario_params = "all"
         case "A2_top":
             target_anomalies = filter_top_k_frequent(features_dict, k=config.get('top_k', 5))
+            scenario_params = f"top_{config.get('top_k', 5)}"
         case "A2_bottom":
             target_anomalies = filter_bottom_k_frequent(features_dict, k=config.get('bottom_k', 5))
-            
+            scenario_params = f"bottom_{config.get('bottom_k', 5)}"
+
         # --- B SCENARIOS ---
         case "B1_exact":
             target_anomalies = filter_by_ged(features_dict, exact_ged=config['ged_thresholds']['exact'])
+            scenario_params = f"exact_ged_{config['ged_thresholds']['exact']}"
         case "B1_extreme_min":
             target_anomalies = filter_by_ged(features_dict, min_ged=config['ged_thresholds']['min_extreme'])
+            scenario_params = f"min_extreme_{config['ged_thresholds']['min_extreme']}"
         case "B1_extreme_max":
             target_anomalies = filter_by_ged(features_dict, max_ged=config['ged_thresholds']['max_extreme'])
+            scenario_params = f"max_extreme_{config['ged_thresholds']['max_extreme']}"
         case "B2_bottleneck":
             target_anomalies = filter_by_bottleneck(features_dict, anom_graphs, auto_bottlenecks)
+            scenario_params = f"bottleneck_top_{config.get('top_k_bottlenecks', 3)}"
         case "B3_early":
             target_anomalies = filter_by_position(features_dict, anom_graphs, auto_early, "Early")
+            scenario_params = f"early_{config.get('top_k', 5)}"
         case "B3_late":
             target_anomalies = filter_by_position(features_dict, anom_graphs, auto_late, "Late")
-         
+            scenario_params = f"late_{config.get('top_k', 5)}"
+            
         # --- C SCENARIOS ---
         
         # --- D SCENARIOS ---   
@@ -154,7 +164,7 @@ def main():
         
     print(f"\n[!] Evaluating new {args.strategy.upper()} log for scenario {args.scenario}...")
     new_metrics = evaluate_model(output_path, pnml_path)
-    update_results_matrix(matrix_path, dataset_name, args.strategy, args.scenario, modified_traces, new_metrics)
+    update_results_matrix(matrix_path, dataset_name, args.strategy, args.scenario, modified_traces, new_metrics, parameters=scenario_params)
     print("\nExperiment completed successfully!")
      
 if __name__ == "__main__":
