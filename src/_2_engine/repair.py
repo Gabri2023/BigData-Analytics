@@ -1,7 +1,6 @@
 import pm4py
 from pm4py.objects.log.obj import EventLog, Trace, Event
 from typing import List, Dict, Any
-from copy import deepcopy
 import networkx as nx
 from datetime import timedelta
 
@@ -28,21 +27,10 @@ def run_repair(log: EventLog,
                target_anomalies: List[str]) -> EventLog:
     """
     Scans the Event Log and replaces occurrences of target anomalies with their correct counterparts.
-    
-    Args:
-        log (EventLog): The original pm4py Event Log.
-        anomalous_graphs (Dict): Dictionary of anomalous NetworkX subgraphs.
-        correct_subgraphs (Dict): Dictionary of correct NetworkX subgraphs.
-        features_dict (Dict): Dictionary containing the mapping (produced in Phase 1).
-        target_anomalies (List[str]): List of anomalous IDs to repair in this specific scenario.
-        
-    Returns:
-        EventLog: A new, altered pm4py Event Log.
     """
     print(f"Starting REPAIR engine for {len(target_anomalies)} target anomalies...")
     
-    # Create a deepcopy to avoid modifying the original log in memory
-    repaired_log = deepcopy(log)
+    repaired_log = log
     
     # Pre-compute the label sequences for fast searching
     repair_mapping = {}
@@ -70,10 +58,20 @@ def run_repair(log: EventLog,
             anom_seq = mapping['anom_seq']
             corr_seq = mapping['corr_seq']
             
-            # Find where the anomaly starts in the trace
-            start_idx = _find_subsequence(trace_labels, anom_seq)
+            if not anom_seq:
+                continue
+
+            # Tracking the offset prevents infinite loops
+            search_offset = 0
             
-            while start_idx != -1:
+            while True:
+                # Find where the anomaly starts in the REMAINING part of the trace
+                rel_idx = _find_subsequence(trace_labels[search_offset:], anom_seq)
+                
+                if rel_idx == -1:
+                    break # Not found, exit the while loop
+                    
+                start_idx = search_offset + rel_idx
                 end_idx = start_idx + len(anom_seq) - 1
                 
                 # Extract timestamps to preserve the timeframe
@@ -91,7 +89,6 @@ def run_repair(log: EventLog,
                     new_event = Event()
                     new_event["concept:name"] = label
                     new_event["time:timestamp"] = start_time + (step * i)
-                    # Add any mandatory custom attributes your log might have (e.g., Resource)
                     new_event["lifecycle:transition"] = "complete" 
                     new_events.append(new_event)
                 
@@ -99,14 +96,14 @@ def run_repair(log: EventLog,
                 trace[start_idx : end_idx + 1] = new_events
                 trace_was_modified = True
                 
-                # Update trace_labels for the next iteration (in case of multiple anomalies in one trace)
+                # Update trace_labels for the next iteration
                 trace_labels = [event["concept:name"] for event in trace]
                 
-                # Search again in case the same anomaly happens twice in the same trace
-                start_idx = _find_subsequence(trace_labels, anom_seq)
+                # Advance the search offset PAST the newly inserted correct sequence
+                search_offset = start_idx + len(corr_seq)
                 
         if trace_was_modified:
             traces_modified += 1
 
     print(f"Repair complete. Modified {traces_modified} out of {len(repaired_log)} traces.")
-    return repaired_log
+    return repaired_log, traces_modified

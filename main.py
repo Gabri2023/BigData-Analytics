@@ -3,14 +3,18 @@ from pathlib import Path
 import yaml
 import pm4py
 import sys
+import os
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 # --- Imports from PHASE 1 ---
-from src._1_baseline.parser import parse_subelements
-from src._1_baseline.frequencies_extraction import extract_frequencies
-from src._1_baseline.ged_mapper import get_features
 from src._1_baseline.bottleneck_extractor import extract_process_metrics
+from src._1_baseline.frequencies_extractor import extract_frequencies
+from src._1_baseline.ged_mapper import get_features
+from src._1_baseline.parser import parse_subelements
 
 # --- Imports from PHASE 2 ---
+# from src._2_engine.infect import run_infect
 from src._2_engine.repair import run_repair
 
 # --- Imports from PHASE 3 ---
@@ -19,6 +23,7 @@ from src._3_scenarios.b_structural import filter_by_ged, filter_by_bottleneck, f
 
 # --- Imports from PHASE 4 ---
 from src._4_evaluation.metrics_calculator import evaluate_model
+from src._4_evaluation.results_tracker import update_results_matrix, is_baseline_calculated
 
 def main():
     # 1. Command Line Arguments Configuration
@@ -51,6 +56,8 @@ def main():
     anom_path = base_data_path / "custom" / "anomalous_sub.txt"
     corr_path = base_data_path / "custom" / "correct_sub.txt"
     config_path = Path("config") / f"config_{dataset_name}.yaml"
+    pnml_path = base_data_path / "models_raw" / f"petri_net_{dataset_name}.pnml"
+    matrix_path = Path("results") / "experiments_matrix.csv"
         
     output_path = base_data_path / "custom" / "processed" / f"{dataset_name}_{args.strategy}_{args.scenario}.xes"
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -67,7 +74,8 @@ def main():
                        (csv_path, "CSV"),
                        (anom_path, "Anomalous TXT"),
                        (corr_path, "Correct TXT"),
-                       (config_path, "Config YAML")]:
+                       (config_path, "Config YAML"),
+                       (pnml_path, "Baseline Petri Net PNML")]:
         if not path.exists():
             print(f"Error: {name} file not found at {path}")
             sys.exit(1)
@@ -128,7 +136,7 @@ def main():
     # --- PHASE 2: Alteration Engine ---
     # ----------------------------------
     if args.strategy == "repair":
-        altered_log = run_repair(original_log, anom_graphs, corr_graphs, features_dict, target_anomalies)
+        altered_log, modified_traces = run_repair(original_log, anom_graphs, corr_graphs, features_dict, target_anomalies)
     elif args.strategy == "infect":
         print("[INFO] Strategy 'infect' not implemented yet.")
         sys.exit(0)
@@ -137,6 +145,15 @@ def main():
     # --- PHASE 4: Saving ---
     # -----------------------
     pm4py.write_xes(altered_log, str(output_path))
+    if args.recalc_baseline or not is_baseline_calculated(matrix_path, dataset_name):
+        print("[INFO] Calculating baseline metrics...")
+        baseline_metrics = evaluate_model(log_path, pnml_path)
+        update_results_matrix(matrix_path, dataset_name, "BASELINE", "original", 0, baseline_metrics)
+        
+    print(f"\n[!] Evaluating new {args.strategy.upper()} log for scenario {args.scenario}...")
+    new_metrics = evaluate_model(output_path, pnml_path)
+    update_results_matrix(matrix_path, dataset_name, args.strategy, args.scenario, modified_traces, new_metrics)
+    print("\nExperiment completed successfully!")
      
 if __name__ == "__main__":
     main()

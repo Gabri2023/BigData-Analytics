@@ -34,12 +34,12 @@ def get_features(anomalous_graphs: Dict[str, nx.DiGraph],
     features_dict = {}
 
     for anom_id in target_subs:
-        # Check if the graph actually exists in the TXT
         if anom_id not in anomalous_graphs:
             print(f"[WARNING] Graph for {anom_id} missing from TXT file. Skipping.")
             continue
             
         G_anom = anomalous_graphs[anom_id]
+        anom_node_count = len(G_anom.nodes())
         
         min_ged = float('inf')
         best_match_id = None
@@ -47,12 +47,35 @@ def get_features(anomalous_graphs: Dict[str, nx.DiGraph],
         
         # 1. Find the most structurally similar correct subgraph (Minimum GED)
         for corr_id, G_corr in correct_subgraphs.items():
-            dist = nx.graph_edit_distance(G_anom, G_corr, node_match=node_match)
+            corr_node_count = len(G_corr.nodes())
             
-            if dist < min_ged:
+            # --- OPTIMIZATION 1: Absolute Minimum Bound ---
+            # The GED can NEVER be smaller than the difference in node counts.
+            # If the size difference alone is worse than our current best GED, skip entirely!
+            if abs(anom_node_count - corr_node_count) >= min_ged:
+                continue
+            
+            # --- OPTIMIZATION 2: Upper Bound & Timeout ---
+            # It uses NetworkX to stop calculating if it exceeds our current min_ged,
+            # and to give up if it takes more than 5 seconds for a single comparison.
+            dist = nx.graph_edit_distance(
+                G_anom, G_corr, 
+                node_match=node_match, 
+                upper_bound=min_ged,
+                timeout=5.0
+            )
+            
+            if dist is not None and dist < min_ged:
                 min_ged = dist
                 best_match_id = corr_id
                 best_match_G = G_corr
+                
+        # Fallback if timeout prevented finding a match
+        if best_match_G is None:
+            # Just take the first one if everything timed out (rare fallback)
+            best_match_id = list(correct_subgraphs.keys())[0]
+            best_match_G = correct_subgraphs[best_match_id]
+            min_ged = 99.0 # Placeholder for "too complex to calculate"
                 
         # 2. Calculate the semantic similarity with the best structural match
         text_anom = get_graph_text(G_anom)
@@ -62,7 +85,7 @@ def get_features(anomalous_graphs: Dict[str, nx.DiGraph],
         embedding_corr = sbert_model.encode([text_corr])
         sim_score = cosine_similarity(embedding_anom, embedding_corr)[0][0]
         
-        # 3. Store the extracted features along with the raw frequency
+        # 3. Store the extracted features
         features_dict[anom_id] = {
             'ged': min_ged,
             'semantic_sim': sim_score,

@@ -1,0 +1,5 @@
+Dataset,Strategy,Scenario,Modified_Traces,Fitness,Precision,Generalization,Simplicity
+fineExp,BASELINE,original,0,0.9274,0.7515,0.9516,0.6279
+fineExp,REPAIR,B2_bottleneck,613,0.9272,0.6995,0.9862,0.6279
+fineExp,REPAIR,B3_late,3370,0.9257,0.6643,0.9873,0.6279
+fineExp,REPAIR,B3_early,3025,0.926,0.6899,0.9867,0.6279
