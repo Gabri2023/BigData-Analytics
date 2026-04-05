@@ -1,9 +1,15 @@
 Dataset,Strategy,Scenario,Modified_Traces,Fitness,Precision,Generalization,Simplicity,Parameters
 fineExp,BASELINE,original,0,0.9274,0.7515,0.9516,0.6279,
-fineExp,REPAIR,B2_bottleneck,613,0.9272,0.6995,0.9862,0.6279,bottleneck_top_3
+fineExp,REPAIR,B2_bottleneck,613,0.9273,0.6999,0.986,0.6279,bottleneck_top_3
 fineExp,REPAIR,B3_late,3370,0.9257,0.6643,0.9873,0.6279,late_5
 fineExp,REPAIR,B3_early,3025,0.926,0.6899,0.9867,0.6279,early_5
-fineExp,REPAIR,A1,3370,0.9257,0.6643,0.9873,0.6279,
+fineExp,REPAIR,A1,3370,0.9257,0.6643,0.9873,0.6279,all
 fineExp,REPAIR,A2_top,3288,0.9257,0.7269,0.9872,0.6279,
 fineExp,REPAIR,A2_bottom,8,0.9274,0.7514,0.9516,0.6279,
 fineExp,REPAIR,B1_exact,557,0.9272,0.716,0.9861,0.6279,
+fineExp,REPAIR,A2_top,3288,0.9258,0.7263,0.987,0.6279,top_5
+fineExp,REPAIR,A2_top,3338,0.9257,0.6917,0.9873,0.6279,top_10
+fineExp,REPAIR,A2_top,3357,0.9257,0.6929,0.9872,0.6279,top_15
+fineExp,REPAIR,B1_exact+B2_bottleneck,513,0.9272,0.7508,0.9861,0.6279,exact_ged_2+bottleneck_top_2
+fineExp,REPAIR,B1_exact+B2_bottleneck,541,0.9272,0.7508,0.9861,0.6279,exact_ged_2+bottleneck_top_3
+fineExp,REPAIR,B2_bottleneck,539,0.9272,0.7236,0.9861,0.6279,bottleneck_top_2
