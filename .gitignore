@@ -25,6 +25,8 @@ logs_*.txt
 
 # backup risultati
 results/backup_pre_fixes/
+papers
+relazione
 
 # cache features (rigenerabile)
 data/*/custom/features_cache.pkl
